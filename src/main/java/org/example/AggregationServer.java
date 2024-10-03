@@ -11,7 +11,6 @@ public class AggregationServer {
     private static final int DEFAULT_PORT = 4567;
     private static final long EXPIRATION_TIME = 300 * 100;
     private static final String OUTPUT_FILE = "weather_data.json";
-
     private static final Map<String, WeatherData> weatherDataMap = new ConcurrentHashMap<>();
     private static final Map<String, Long> contentServerLastSeen = new ConcurrentHashMap<>();
     private static final LamportClock lamportClock = new LamportClock();
@@ -26,7 +25,7 @@ public class AggregationServer {
             }
         }
 
-        loadDataFromFile();
+        loadData();
 
         Thread expirationThread = new Thread(new DataExpirationTask());
         expirationThread.setDaemon(true);
@@ -47,7 +46,7 @@ public class AggregationServer {
     }
 
     // Method to load data from the JSON file
-    private static void loadDataFromFile() {
+    private static void loadData() {
         synchronized (weatherDataMap) {
             File dataFile = new File(OUTPUT_FILE);
             File tempFile = new File(OUTPUT_FILE + ".tmp");
@@ -94,7 +93,7 @@ public class AggregationServer {
     }
 
     // Method to save data to the JSON file
-    private static void saveDataToFile() {
+    private static void saveToFile() {
         synchronized (weatherDataMap) {
             JSONObject jsonObject = new JSONObject();
             for (WeatherData data : weatherDataMap.values()) {
@@ -227,7 +226,7 @@ public class AggregationServer {
                     contentServerLastSeen.put(id, System.currentTimeMillis());
 
                     // Save data to file
-                    saveDataToFile();
+                    saveToFile();
 
                     // Send response
                     int statusCode = isNewData ? 201 : 200;
@@ -294,7 +293,7 @@ public class AggregationServer {
 
 
                     if (dataChanged) {
-                        saveDataToFile();
+                        saveToFile();
                     }
                 }
 
@@ -317,13 +316,29 @@ public class AggregationServer {
         }
 
         public String getId() {
-            return jsonData.getString("id");
+            return jsonData.optString("id", "");  // Default to empty string if id is not present
         }
 
         public JSONObject toJson() {
             return jsonData;
         }
     }
+
+//    private static class WeatherData {
+//        private final JSONObject jsonData;
+//
+//        public WeatherData(JSONObject jsonData) {
+//            this.jsonData = jsonData;
+//        }
+//
+//        public String getId() {
+//            return jsonData.getString("id"," ");
+//        }
+//
+//        public JSONObject toJson() {
+//            return jsonData;
+//        }
+//    }
 
     // LamportClock class
     private static class LamportClock {
@@ -348,228 +363,3 @@ public class AggregationServer {
 
 
 
-//package org.example;
-//
-//import java.io.*;
-//import java.net.ServerSocket;
-//import java.net.Socket;
-//import java.nio.file.*;
-//import java.util.*;
-//import java.util.concurrent.ConcurrentHashMap;
-//import org.json.JSONObject;
-//
-///**
-// * This class represents an aggregation server that collects and manages weather data.
-// */
-//public class AggregationServer {
-//    private static final int DEFAULT_PORT = 4567;
-//    private static final long DATA_EXPIRATION_INTERVAL = 300 * 1000; // data expiration time in milliseconds
-//    private static final String WEATHER_DATA_FILE = "weather_data.json";
-//
-//    private static final Map<String, WeatherData> weatherDataMap = new ConcurrentHashMap<>();
-//    private static final Map<String, Long> lastContactTime = new ConcurrentHashMap<>();
-//    private static final LamportClock clock = new LamportClock();
-//
-//    public static void main(String[] args) {
-//        int port = DEFAULT_PORT;
-//        try {
-//            if (args.length >= 1) {
-//                port = Integer.parseInt(args[0]);
-//            }
-//        } catch (NumberFormatException e) {
-//            System.err.println("Invalid port number provided. Using default port " + DEFAULT_PORT);
-//        }
-//
-//        loadWeatherData();
-//
-//        Thread cleanupThread = new Thread(new DataCleanupTask());
-//        cleanupThread.setDaemon(true);
-//        cleanupThread.start();
-//
-//        try (ServerSocket serverSocket = new ServerSocket(port)) {
-//            System.out.println("Aggregation Server is up and running on port " + port);
-//
-//            while (true) {
-//                try {
-//                    Socket clientSocket = serverSocket.accept();
-//                    Thread clientThread = new Thread(new ClientRequestHandler(clientSocket));
-//                    clientThread.start();
-//                } catch (IOException e) {
-//                    System.err.println("Error accepting client connection.");
-//                    e.printStackTrace();
-//                }
-//            }
-//        } catch (IOException e) {
-//            System.err.println("Failed to start server on port " + port);
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    /**
-//     * Loads weather data from a file, or initializes empty data if no file exists.
-//     */
-//    private static void loadWeatherData() {
-//        synchronized (weatherDataMap) {
-//            File file = new File(WEATHER_DATA_FILE);
-//            File tempFile = new File(WEATHER_DATA_FILE + ".tmp");
-//
-//            File fileToUse = file.exists() ? file : (tempFile.exists() ? tempFile : null);
-//            if (fileToUse == null) {
-//                System.out.println("No existing data file found. Starting fresh.");
-//                return;
-//            }
-//
-//            try {
-//                String content = new String(Files.readAllBytes(fileToUse.toPath()));
-//                JSONObject data = new JSONObject(content);
-//                data.keySet().forEach(id -> {
-//                    WeatherData weatherData = new WeatherData(data.getJSONObject(id));
-//                    weatherDataMap.put(id, weatherData);
-//                    lastContactTime.put(id, System.currentTimeMillis());
-//                });
-//                System.out.println("Loaded data from " + fileToUse.getName());
-//
-//                if (tempFile.exists()) {
-//                    Files.move(tempFile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//                }
-//            } catch (IOException | org.json.JSONException e) {
-//                System.err.println("Failed to load data from file.");
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-//
-//    /**
-//     * Saves the current weather data to a file.
-//     */
-//    private static void saveWeatherData() {
-//        synchronized (weatherDataMap) {
-//            JSONObject dataToSave = new JSONObject();
-//            weatherDataMap.forEach((id, weatherData) -> dataToSave.put(id, weatherData.toJson()));
-//
-//            File tempFile = new File(WEATHER_DATA_FILE + ".tmp");
-//            try (FileWriter writer = new FileWriter(tempFile)) {
-//                writer.write(dataToSave.toString());
-//                writer.flush();
-//
-//                File finalFile = new File(WEATHER_DATA_FILE);
-//                Files.move(tempFile.toPath(), finalFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//                System.out.println("Weather data saved to " + WEATHER_DATA_FILE);
-//            } catch (IOException e) {
-//                System.err.println("Error saving weather data.");
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-//
-//    /**
-//     * Handles client requests in a dedicated thread.
-//     */
-//    private static class ClientRequestHandler implements Runnable {
-//        private Socket socket;
-//
-//        public ClientRequestHandler(Socket socket) {
-//            this.socket = socket;
-//        }
-//
-//        public void run() {
-//            clock.increment();
-//            try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))) {
-//
-//                String line = reader.readLine();
-//                if (line == null) {
-//                    return;
-//                }
-//
-//                // Process the request
-//                handleRequest(line, reader, writer);
-//
-//            } catch (IOException e) {
-//                System.err.println("I/O error while processing client request.");
-//                e.printStackTrace();
-//            } finally {
-//                clock.increment();
-//                try {
-//                    socket.close();
-//                } catch (IOException e) {
-//                    System.err.println("Failed to close client socket.");
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
-//
-//        /**
-//         * Process the incoming request and respond accordingly.
-//         */
-//        private void handleRequest(String requestLine, BufferedReader reader, BufferedWriter writer) throws IOException {
-//            // Placeholder for request processing logic
-//        }
-//    }
-//
-//    /**
-//     * Periodically checks for expired data and removes it.
-//     */
-//    private static class DataCleanupTask implements Runnable {
-//        public void run() {
-//            while (true) {
-//                try {
-//                    Thread.sleep(5000); // Sleep for 5 seconds before checking again
-//                    cleanUpExpiredData();
-//                } catch (InterruptedException e) {
-//                    Thread.currentThread().interrupt();
-//                    return;
-//                }
-//            }
-//        }
-//
-//        private void cleanUpExpiredData() {
-//            long currentTime = System.currentTimeMillis();
-//            synchronized (weatherDataMap) {
-//                Iterator<Map.Entry<String, Long>> iterator = lastContactTime.entrySet().iterator();
-//                while (iterator.hasNext()) {
-//                    Map.Entry<String, Long> entry = iterator.next();
-//                    if (currentTime - entry.getValue() > DATA_EXPIRATION_INTERVAL) {
-//                        weatherDataMap.remove(entry.getKey());
-//                        iterator.remove();
-//                        System.out.println("Removed expired data for content server: " + entry.getKey());
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    /**
-//     * Represents weather data with a JSON object.
-//     */
-//    private static class WeatherData {
-//        private JSONObject data;
-//
-//        public WeatherData(JSONObject data) {
-//            this.data = data;
-//        }
-//
-//        public JSONObject toJson() {
-//            return data;
-//        }
-//    }
-//
-//    /**
-//     * Manages increments to ensure proper synchronization across distributed components.
-//     */
-//    private static class LamportClock {
-//        private int value = 0;
-//
-//        public synchronized void increment() {
-//            value++;
-//        }
-//
-//        public synchronized void adjust(int receivedValue) {
-//            value = Math.max(value, receivedValue) + 1;
-//        }
-//
-//        public synchronized int currentValue() {
-//            return value;
-//        }
-//    }
-//}

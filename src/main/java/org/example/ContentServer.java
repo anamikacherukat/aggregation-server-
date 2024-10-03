@@ -42,7 +42,7 @@ public class ContentServer {
 
         try {
             
-            Map<String, String> dataMap = parseDataFile(dataFilePath);
+            Map<String, String> dataMap = parseFile(dataFilePath);
             if (!dataMap.containsKey("id")) {
                 System.err.println("Data must contain an 'id' field.");
                 return;
@@ -103,7 +103,7 @@ public class ContentServer {
 
                 // Check the status code and print appropriate message
                 if (statusCode == 200 || statusCode == 201) {
-                    System.out.println("Data uploaded successfully. Status code: " + statusCode);
+                    System.out.println("Data upload successful. Status code: " + statusCode);
                 } else {
                     System.err.println("Error: Received status code " + statusCode);
                 }
@@ -118,7 +118,7 @@ public class ContentServer {
     }
 
     // Method to parse the data file into a map of key-value pairs
-    public static Map<String, String> parseDataFile(String filePath) {
+    public static Map<String, String> parseFile(String filePath) {
         Map<String, String> dataMap = new HashMap<>();
         try {
             List<String> lines = Files.readAllLines(Paths.get(filePath)); 

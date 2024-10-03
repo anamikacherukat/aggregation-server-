@@ -9,7 +9,7 @@ public class GETClient {
 
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.out.println("Correct format: java GETClient <server:port> [station_id]");
+            System.out.println("Incorrect; The Correct format is : java GETClient <server:port> [station_id]");
             return;
         }
 
@@ -100,14 +100,14 @@ public class GETClient {
                 JSONObject jsonObject = new JSONObject(body);
                 if (stationId != null) {
                     if (jsonObject.has(stationId)) {
-                        displayWeatherData(jsonObject.getJSONObject(stationId));
+                        printData(jsonObject.getJSONObject(stationId));
                     } else {
                         System.out.println("Station ID not found.");
                     }
                 } else {
                     for (String id : jsonObject.keySet()) {
                         System.out.println("Station ID: " + id);
-                        displayWeatherData(jsonObject.getJSONObject(id));
+                        printData(jsonObject.getJSONObject(id));
                         System.out.println();
                     }
                 }
@@ -123,7 +123,7 @@ public class GETClient {
         }
     }
 
-    private static void displayWeatherData(JSONObject weatherData) {
+    private static void printData(JSONObject weatherData) {
         for (String key : weatherData.keySet()) {
             System.out.println(key + ": " + weatherData.get(key));
         }
