@@ -26,7 +26,9 @@ public class ContentServerTest {
     }
 
     @Test
-    public void testParseDataFile_ValidFile() throws IOException {
+    // Writes some data to a file. Parses this data back into the application to verify the parsing logic.
+    // Also deletes the file after checking
+    public void testParseValidFile() throws IOException {
         String filePath = "test_data.txt";
         String content = "id: 12345\nname: Test\nlocation: Earth";
         Files.write(Paths.get(filePath), content.getBytes());
@@ -42,9 +44,11 @@ public class ContentServerTest {
     }
 
     @Test
-    public void testParseDataFile_InvalidFile() throws IOException {
+    // Writes some content onto an invalid_data file and then calls the parseFile function in contentServer.
+    // An empty map if returned would indicate that the parseFile method correctly identified the file's contents as invalid and did not store any erroneous data.
+    public void testParseData_FileInvalidity() throws IOException {
         String filePath = "invalid_data.txt";
-        Files.write(Paths.get(filePath), "Invalid content for testing - testParseDataFile_InvalidFile in the content server".getBytes());
+        Files.write(Paths.get(filePath), "Invalid content for testing - testParseData_FileInvalidity in the content server".getBytes());
         if (Files.exists(Paths.get(filePath))) {
             System.out.println("File has been successfully created at " + filePath);
         }
@@ -53,11 +57,12 @@ public class ContentServerTest {
 
         assertTrue(dataMap.isEmpty());
 
-        // Files.deleteIfExists(Paths.get(filePath));
+         Files.deleteIfExists(Paths.get(filePath));
     }
 
     @Test
-    public void testLamportClock_Tick() {
+    // Tests whether the lamport clock correctly begins from 0 and increments by 1 tick
+    public void testLamportClock_Increment() {
         lamportClock.tick();
         assertEquals(1, lamportClock.getValue());
 
@@ -66,7 +71,8 @@ public class ContentServerTest {
     }
 
     @Test
-    public void testLamportClock_ReceiveAction() {
+    // The LamportClock correctly updates when a higher timestamp is received.
+    public void testLamportClock_Updates() {
         lamportClock.receiveAction(5);
         assertEquals(6, lamportClock.getValue());
 
@@ -74,20 +80,9 @@ public class ContentServerTest {
         assertEquals(7, lamportClock.getValue());
     }
 
-//    @Test
-//    public void testMain_InvalidArguments() {
-//        String[] args = {};
-//
-//        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-//        System.setOut(new PrintStream(outContent));
-//
-//        ContentServer.main(args);
-//
-//        assertTrue(outContent.toString().contains("Usage: java ContentServer <server:port> <data_file>"));
-//    }
-
     @Test
-    public void testMain_InvalidServerInfo() {
+    // The test checks whether the captured output in outContent contains the specific error message - Invalid server info.
+    public void testServer_Invalidity() {
         String[] args = {"invalid-server-info", "data.txt"};
 
         ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -98,6 +93,7 @@ public class ContentServerTest {
         assertTrue(outContent.toString().contains("Invalid server info. Expected format: <server>:<port>"));
     }
 
+// The sendHttpRequest method establishes a socket connection to a server, constructs and sends HTTP requests manually, and retrieves responses
     private String sendHttpRequest(String method, String path, String body, Map<String, String> headers) throws IOException {
         try (Socket socket = new Socket("localhost", 4567)) {  // Assumes the server is running on localhost:4567
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
@@ -134,7 +130,8 @@ public class ContentServerTest {
 
 
     @Test
-    public void testPutWithInvalidJson() throws IOException {
+    // This test checks the response of a server when it receives a PUT request with invalid JSON data, expecting a "400 Bad Request" status. 
+    public void testInvalidJson() throws IOException {
         String invalidJsonData = "{\"id\":,\"temperature\":invalid}";
 
         ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -145,7 +142,8 @@ public class ContentServerTest {
     }
 
     @Test
-    public void testServerStartupAndCommunication() {
+    //This test verifies that the ContentServer successfully starts up and can accept TCP/IP connections on localhost at port 4567 without throwing any exceptions.
+    public void testServerStart() {
         assertDoesNotThrow(() -> {
             Socket socket = new Socket("localhost", 4567);
             socket.close();
@@ -153,7 +151,8 @@ public class ContentServerTest {
     }
 
     @Test
-    public void testInvalidJsonHandling() throws IOException {
+    // This test method checks if a server properly handles a PUT request containing incorrect JSON by verifying that it responds with an HTTP 400 Bad Request error
+    public void testIncorrectJson() throws IOException {
         // Setup a socket to connect to the server assuming server is running on localhost:4567
         try (Socket socket = new Socket("localhost", 4567);
              BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -180,6 +179,7 @@ public class ContentServerTest {
     }
 
     @Test
+    // This test  evaluates the response of the server when receiving a PUT request with valid JSON data from a content server.
     public void testPutOperationFromContentServer() throws Exception {
         String jsonData = "{\"id\":\"uniqueID\",\"data\":\"Test data\"}";
         String response = sendHttpRequest("PUT", "/weather.json", jsonData, new HashMap<>());

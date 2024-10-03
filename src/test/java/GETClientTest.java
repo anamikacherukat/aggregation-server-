@@ -17,7 +17,8 @@ import org.junit.jupiter.api.Test;
 public class GETClientTest {
 
     @Test
-    public void testMain_NoArguments() {
+    // This test checks the GETClient.main function when it is run without any command-line arguments.
+    public void testMainWith_NoArguments() {
 
         ByteArrayOutputStream outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
@@ -28,6 +29,7 @@ public class GETClientTest {
 
         System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
     }
+    // The sendHttpRequest method establishes a socket connection to a server, constructs and sends HTTP requests manually, and retrieves responses
     private String sendHttpRequest(String method, String path, String body, Map<String, String> headers) throws IOException {
         try (Socket socket = new Socket("localhost", 4567)) {  // Assumes the server is running on localhost:4567
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
@@ -64,7 +66,8 @@ public class GETClientTest {
 
 
     @Test
-    public void testServerStartupAndCommunication() {
+    // This  method assesses whether the get client can successfully start up and can accept connections on localhost at port 4567 without encountering exceptions.
+    public void testServerStart() {
         assertDoesNotThrow(() -> {
             Socket socket = new Socket("localhost", 4567);
             socket.close();
@@ -72,6 +75,7 @@ public class GETClientTest {
     }
 
     @Test
+    // This method verifies that the GETClient.main function properly handles and reports an error when given incorrect server information as a command-line argument.
     public void testMain_InvalidServerInfo() {
 
         ByteArrayOutputStream errContent = new ByteArrayOutputStream();
@@ -88,7 +92,7 @@ public class GETClientTest {
 
     @Test
     public void testMain_InvalidPort() {
-
+        // This method verifies that the GETClient.main function properly handles and reports an error when given incorrect port as a command-line argument.
         ByteArrayOutputStream errContent = new ByteArrayOutputStream();
         System.setErr(new PrintStream(errContent));
 
@@ -101,6 +105,7 @@ public class GETClientTest {
     }
 
     @Test
+    // This test checks the server's ability to handle multiple concurrent GET requests
     public void testMultipleGetRequests() throws InterruptedException, ExecutionException {
         ExecutorService service = Executors.newFixedThreadPool(5);
         List<Callable<Boolean>> tasks = new ArrayList<>();
@@ -120,58 +125,3 @@ public class GETClientTest {
 }
 
 
-
-//import java.io.ByteArrayOutputStream;
-//import java.io.FileDescriptor;
-//import java.io.FileOutputStream;
-//import java.io.PrintStream;
-//
-//import static org.junit.jupiter.api.Assertions.assertTrue;
-//import org.junit.jupiter.api.Test;
-//
-//import org.example.GETClient;
-//
-//public class GETClientTest {
-//
-//    @Test
-//    public void testMain_NoArguments() {
-//
-//        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-//        System.setOut(new PrintStream(outContent));
-//
-//        GETClient.main(new String[]{});
-//
-//        assertTrue(outContent.toString().contains("Correct format: java GETClient <server:port> [station_id]"));
-//
-//        System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
-//    }
-//
-//    @Test
-//    public void testMain_InvalidServerInfo() {
-//
-//        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-//        System.setErr(new PrintStream(errContent));
-//
-//
-//        GETClient.main(new String[]{"invalid-server-info"});
-//
-//        assertTrue(errContent.toString().contains("Invalid server information. Expected format: <server>:<port>"));
-//
-//
-//        System.setErr(new PrintStream(new FileOutputStream(FileDescriptor.err)));
-//    }
-//
-//    @Test
-//    public void testMain_InvalidPort() {
-//
-//        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-//        System.setErr(new PrintStream(errContent));
-//
-//        GETClient.main(new String[]{"localhost:invalid-port"});
-//
-//        assertTrue(errContent.toString().contains("Invalid port number."));
-//
-//
-//        System.setErr(new PrintStream(new FileOutputStream(FileDescriptor.err)));
-//    }
-//}

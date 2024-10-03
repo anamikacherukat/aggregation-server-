@@ -1,5 +1,3 @@
-//package test;
-//
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -15,7 +13,6 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 import static org.junit.Assert.fail;
-
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -109,6 +106,7 @@ public class AggregationServerTest {
     }
 
     @Test
+    //This test assesses the server's capability to handle multiple concurrent PUT requests
     public void testConcurrentPutRequests() throws InterruptedException, IOException {
         int threadCount = 5;
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
@@ -142,6 +140,7 @@ public class AggregationServerTest {
     }
 
     @Test
+    // This test checks the server's response to an improperly formatted HTTP request
     public void testBadRequestHandling() throws Exception {
         String invalidRequest = "BAD_METHOD /invalid_endpoint HTTP/1.1\r\n\r\n";
         String response = sendHttpRequest("BAD_METHOD", "/invalid_endpoint", null, new HashMap<>());
@@ -149,6 +148,7 @@ public class AggregationServerTest {
     }
 
     @Test
+    // This test confirms that the data is correctly expired and no longer available by checking that the response does not contain the previously stored data.
     public void testDataExpiration() throws Exception {
         // PUT data that should expire
         String jsonData = "{\"id\":\"IDS002\",\"temperature\":24}";
@@ -158,8 +158,8 @@ public class AggregationServerTest {
         assertFalse("Data should be expired and not present", response.contains("\"id\":\"IDS002\""));
     }
 
-    // Example for AggregationServerTest.java
     @Test
+    // This test evaluates whether a server is successfully started and capable of accepting network connections on localhost at port 4567
     public void testServerStartupAndCommunication() {
         assertDoesNotThrow(() -> {
             Socket socket = new Socket("localhost", 4567);
@@ -168,6 +168,8 @@ public class AggregationServerTest {
     }
 
     @Test
+    //This test checks the server's  error recovery by intentionally closing a socket connection to simulate a server unavailability scenario,
+    // then attempting to reconnect to verify that the server or client can handle retries without throwing errors.
     public void testRetryOnError() throws IOException {
         try (Socket socket = new Socket("localhost", 4567)) {
             socket.close();  // Close the socket to simulate server not available
@@ -178,6 +180,8 @@ public class AggregationServerTest {
     }
 
     @Test
+    // This test assesses the server's capability to handle multiple concurrent GET requests
+    // by using a fixed thread pool to execute five simultaneous GET operations using a for loop.
     public void testMultipleGetRequests() throws InterruptedException, ExecutionException {
         ExecutorService service = Executors.newFixedThreadPool(5);
         List<Callable<Boolean>> tasks = new ArrayList<>();
