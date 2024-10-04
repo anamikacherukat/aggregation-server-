@@ -31,13 +31,36 @@ project root directory -  _**Assignment2-a1930297-DS**_ :
 
 5. mvn exec:java -Dexec.mainClass="org.example.GETClient" -Dexec.args="localhost:4567" -Dexec.classpathScope=compile
 
+Demo output is shown below
+
+You will see an output similar to this on the terminal:  
+apparent_t: 9.5  
+wind_spd_kmh: 15  
+rel_hum: 60  
+lon: 138.6  
+dewpt: 5.7  
+wind_spd_kt: 8  
+wind_dir: S  
+time_zone: CST  
+air_temp: 13.3  
+cloud: Partly cloudy  
+local_date_time_full: 20230715160000  
+local_date_time: 15/04:00pm  
+name: Adelaide (West Terrace /  ngayirdapira)  
+id: IDS60905  
+state: SA  
+press: 1023.9  
+lat: -34.9  
+
+
 The src/test folder consists of 3 test files -
-1. AggregationServerTest
-2. ContentServerTest
-3. GETClientTest
+1. AggregationServerTest - This class contains several test cases designed to verify the server's functionality in different situations, including handling GET and PUT requests, processing invalid requests, ensuring data expiration, and managing concurrent requests efficiently.
+2. ContentServerTest - These tests examine file parsing, error management, Lamport clock synchronization, and the handling of HTTP requests.
+3. GETClientTest - These tests validates the client's behavior in different scenarios, including handling cases with no arguments, incorrect server details, invalid port numbers, and correctly processing GET requests sent to the server.
 
 
 Each of these test files have to be run manually by right clicking on the file name and choosing **Run Filename.java**. They can all be run at once by selecting **Run All** by right clicking on the test folder. 
 Each of them contains unit tests for assessing the working of the project, 
 including edge cases. 
+
 
