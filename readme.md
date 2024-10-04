@@ -1,4 +1,6 @@
 **Objective**
+
+
 This project creates a RESTful API to enable secure and efficient communication between client and server applications through socket-based interactions. Adhering to REST architectural principles—such as a uniform interface and statelessness—the API utilizes JSON format for data handling. Clients can make GET and PUT requests to access and modify resources on the server, ensuring that update operations remain idempotent. The server manages each incoming request independently, which supports scalable communication among multiple clients. Detailed API documentation is provided to help developers effectively use the interface, promoting smooth integration within various business applications.
 
 **Please Note** - The initial commits of this project was made on the main repository. Inorder to incorporate the changes after the draft submission a new branch has been created - **master**. Please consider this branch as the main for the rest of the project. 
