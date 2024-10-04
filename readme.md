@@ -33,7 +33,6 @@ project root directory -  _**Assignment2-a1930297-DS**_ :
 
 Demo output is shown below
 
-You will see an output similar to this on the terminal:  
 apparent_t: 9.5  
 wind_spd_kmh: 15  
 rel_hum: 60  
@@ -62,5 +61,4 @@ The src/test folder consists of 3 test files -
 Each of these test files have to be run manually by right clicking on the file name and choosing **Run Filename.java**. They can all be run at once by selecting **Run All** by right clicking on the test folder. 
 Each of them contains unit tests for assessing the working of the project, 
 including edge cases. 
-
 
